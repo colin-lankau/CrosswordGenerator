@@ -1,0 +1,47 @@
+.highlighted {
+    @apply bg-sky-200
+}
+
+.directionTitle {
+    @apply text-4xl border-b-4
+}
+
+.rightColumn {
+    @apply border-s-8
+}
+
+.clue {
+    @apply text-2xl flex justify-start
+}
+
+.doneClue {
+    @apply text-gray-400
+}
+
+.notDoneClue {
+    @apply text-black
+}
+
+.clueBtn {
+    @apply w-3/4
+}
+
+/* classes for swap btn */
+.btn {
+    @apply font-bold py-2 px-4 rounded
+}
+.btn-blue {
+    @apply bg-blue-500 text-white
+}
+.btn-blue:hover {
+    @apply bg-blue-700
+}
+.btn-gray {
+    @apply bg-gray-400 text-white
+}
+.btn-gray:hover {
+    @apply bg-gray-600
+}
+.swapBtn {
+    @apply w-1/4
+}

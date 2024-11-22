@@ -1,0 +1,28 @@
+.correctCell {
+    @apply text-blue-600
+}
+
+.incorrectCell {
+    @apply text-red-500
+}
+
+.blacksquare {
+    @apply bg-black 
+}
+
+.highlighted {
+    @apply bg-sky-200
+}
+
+.activated {
+    @apply bg-yellow-200
+}
+
+.container {
+    @apply grid grid-cols-5 gap-1 p-1 bg-black h-auto w-full
+}
+
+.cell {
+    @apply h-28 text-7xl text-center focus:outline-none border border-black
+}
+
