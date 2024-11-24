@@ -36,6 +36,7 @@ this project, but learning about web scraping and databases was fun.
 
 * improve efficiency of crossword generation by 50%
 * bugs when autocheck is on and user is traversing grid
+* numbers in squares indicating what clue it points to
 * user feedback when backend is generating crossword
 * ability to choose desired grid layout
 * ability to choose a difficulty during generation
