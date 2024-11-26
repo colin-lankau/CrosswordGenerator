@@ -44,8 +44,8 @@ class Mini:
 
 
     def __init__(self) -> None:
-        # self._shape = random.choices(POSSIBLE_GRIDS)[0]
-        self._shape = POSSIBLE_GRIDS[0]
+        self._shape = random.choices(POSSIBLE_GRIDS)[0]
+        # self._shape = POSSIBLE_GRIDS[0]
         self._length = 5 # set it to mini size
         self._board = [ [ "_" if (j,i) not in self._shape else "-" for i in range(self._length) ] for j in range(self._length) ]
         self._clues = {} # maps an answer to another map, this map has days of week linked to clues for that day of week
@@ -57,8 +57,8 @@ class Mini:
 
 
     def re_init(self) -> None:
-        # self._shape = random.choices(POSSIBLE_GRIDS)[0]
-        self._shape = POSSIBLE_GRIDS[0]
+        self._shape = random.choices(POSSIBLE_GRIDS)[0]
+        # self._shape = POSSIBLE_GRIDS[0]
         self._length = 5
         self._board = [ [ "_" if (j,i) not in self._shape else "-" for i in range(self._length) ] for j in range(self._length) ]
         self._clues = {}
