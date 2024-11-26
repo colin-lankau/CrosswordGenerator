@@ -9,6 +9,17 @@ from collections import deque, defaultdict
 from copy import deepcopy
 import itertools
 import os
+import time
+import re
+
+''' 
+possible improvements
+limit number of calls to database!!
+- why is previous fills a queue, make it a dictionary? easy key lookup
+maybe dont go to database at all during crossword generation
+- initial call to database and store all words in a large set, then keep making subsets for each pattern
+- then only need to go to database to get clues and other info after crossword is generated
+'''
 
 dbPath = f"{os.path.dirname(os.path.realpath(__file__)).replace("Utils", "Database")}/crossword.db"
 
@@ -33,28 +44,27 @@ class Mini:
 
 
     def __init__(self) -> None:
-        self._shape = random.choices(POSSIBLE_GRIDS)[0]
-        # self._shape = POSSIBLE_GRIDS[1]
+        # self._shape = random.choices(POSSIBLE_GRIDS)[0]
+        self._shape = POSSIBLE_GRIDS[0]
         self._length = 5 # set it to mini size
         self._board = [ [ "_" if (j,i) not in self._shape else "-" for i in range(self._length) ] for j in range(self._length) ]
         self._clues = {} # maps an answer to another map, this map has days of week linked to clues for that day of week
         self._answers = {} # maps an answer to start pos and end pos
         self._previous_states = deque()
-        self._previous_fills = deque() # if go back a state in the board, don't repull from database because we already did that
-        self._previous_fills.append({})
+        self._word_storage = None
         self._done = False
         self._puzzle_info = []
 
 
     def re_init(self) -> None:
-        self._shape = random.choices(POSSIBLE_GRIDS)[0]
+        # self._shape = random.choices(POSSIBLE_GRIDS)[0]
+        self._shape = POSSIBLE_GRIDS[0]
         self._length = 5
         self._board = [ [ "_" if (j,i) not in self._shape else "-" for i in range(self._length) ] for j in range(self._length) ]
         self._clues = {}
         self._answers = {}
         self._previous_states = deque()
-        self._previous_fills = deque()
-        self._previous_fills.append({})
+        self._word_storage = None
         self._done = False
         self._puzzle_info = []
 
@@ -71,6 +81,24 @@ class Mini:
                 return_text += f"{char}  "
             return_text += "\n  "
         return return_text
+    
+
+    def set_word_storage(self, con) -> None:
+        pats = self.get_patterns()
+        lengths = set([ len(pat) for pat in pats ])
+        storage = { str(length): [] for length in lengths }
+        for l in lengths:
+            with con:
+                cur = con.cursor()
+                cur.execute(f"SELECT DISTINCT Answer FROM AnswerClueDB WHERE LENGTH(Answer) == {l};")
+                storage[str(l)] = { row[0] for row in cur.fetchall() }
+        self._word_storage = storage
+
+
+    def get_possible_words(self, pat) -> None:
+        regex = pat.replace('_', '.')
+        options = [ word for word in self._word_storage[str(len(pat))] if re.match(regex, word) ]
+        return options
 
     
     def get_patterns(self, done=False) -> set:
@@ -164,12 +192,10 @@ class Mini:
             currow += 1
 
     
-    def get_hardest_fills(self, con) -> dict:
+    def get_hardest_fills(self) -> dict:
         '''
         Get the hardset fills left in the board and return those
         '''
-        fill_state = deepcopy(self._previous_fills[-1])
-        # print(fill_state.keys())
         result, hardest = {}, float("inf")
         for i, row in enumerate(self._board):
             if '_' not in row: # continue if row is done
@@ -177,18 +203,10 @@ class Mini:
             black_locations = set(i for i, char in enumerate(row) if char == '-')
             letter_locations = set(i for i in range(self._length)) - black_locations
             pat = ''.join(row).strip('-')
-            length = len(pat)
             # figure out where the word starts and ends
             start_loc = min(letter_locations)
             end_loc = max(letter_locations)
-            if pat in fill_state: # don't go out to database if we previously checked this pattern in a previous cycle
-                possible_words = fill_state[pat]
-            else:
-                with con:
-                    cur = con.cursor()
-                    cur.execute(f"SELECT DISTINCT Answer FROM AnswerClueDB WHERE Answer LIKE '{pat}';")
-                    possible_words = [ row[0] for row in cur.fetchall()]
-                    fill_state[pat] = possible_words
+            possible_words = self.get_possible_words(pat)
             if len(possible_words) < hardest:
                 hardest = len(possible_words)
                 result = {
@@ -207,18 +225,10 @@ class Mini:
             letter_locations = set(i for i in range(self._length)) - black_locations
             # print(f"Black Locations: {black_locations}")
             pat = ''.join(col).strip('-')
-            length = len(pat)
             # figure out where the word starts and ends
             start_loc = min(letter_locations)
             end_loc = max(letter_locations)
-            if pat in fill_state: # don't go out to database if we previously checked thius pattern last cycle
-                possible_words = fill_state[pat]
-            else:
-                with con:
-                    cur = con.cursor()
-                    cur.execute(f"SELECT DISTINCT Answer FROM AnswerClueDB WHERE Answer LIKE '{pat}';")
-                    possible_words = [ row[0] for row in cur.fetchall()]
-                    fill_state[pat] = possible_words
+            possible_words = self.get_possible_words(pat)
             if len(possible_words) < hardest:
                 hardest = len(possible_words)
                 result = {
@@ -227,11 +237,8 @@ class Mini:
                     'possible_words': possible_words,
                     'start': start_loc,
                     'index': i,
-                    'end': end_loc,
-                    'length': length
+                    'end': end_loc
                 }
-        # print(result)
-        self._previous_fills.append(fill_state)
         return result  
 
 
@@ -301,14 +308,14 @@ class Mini:
         '''
         # step 0 - initiate connection to database
         con = sqlite3.connect(dbPath)
+        self.set_word_storage(con)
 
         # step 1 - begin loop and initialize
         attempt_counter = defaultdict(int)
         self._previous_states.append(deepcopy(self._board))
         # add and statement here to check all words on board are in db
         while not self._done:
-        # while any('_' in row for row in self._board):  # change this to a self._done var or something, since we check completion after every loop anyway
-
+        
             # print("New Iteration of loop")
             # print("Current Board:")
             # print(self)
@@ -317,7 +324,7 @@ class Mini:
 
             # new step 2 - get hardset fills left for acrosses and downs
             # print("Step 2- Get Hardest Fills")
-            data = self.get_hardest_fills(con)
+            data = self.get_hardest_fills()
 
             # step 3 - make sure we aren't infinite looping
             # print("Step 3- Choose word")
@@ -331,7 +338,6 @@ class Mini:
                     # print("No new words to try, returning to previous state")
                     try: # go back 1 state
                         self._board = self._previous_states.pop()
-                        self._previous_fills.pop()
                     except:
                         print("RESET-1")
                         self.reset() # if we pop from an empty queue, simply restart
@@ -364,29 +370,20 @@ class Mini:
                     flag = False
             else: # board has at least one _ square
                 for pat in patterns:
-                    with con:
-                        cur = con.cursor()
-                        cur.execute(f"SELECT DISTINCT Answer FROM AnswerClueDB WHERE Answer LIKE '{pat}';")
-                        possible_words = [ row[0] for row in cur.fetchall()]
-                        if len(possible_words) == 0: # case 1 - pattern doesn't exist in database -> return to previous board state
-                            flag = False
-                            break
-                        else: # case 2 - all patterns exist in database -> do nothing
-                            # print(f"Pattern {pat} still have {len(possible_words)} viable fills")
-                            pass
+                    possible_words = self.get_possible_words(pat)
+                    if len(possible_words) == 0:
+                        flag = False
+                        break
+                    else:
+                        pass
             if not flag:
                 # print(f"NO MORE POSSIBLE FILLS FOR {pat}... return board to previous state")
                 try:
                     self._board = self._previous_states.pop()
-                    self._previous_fills.pop()
                 except:
                     print("RESET-2")
                     self.reset() # if we pop from an empty queue, simply restart
                     attempt_counter.clear()
-            
-            # print the queue
-            # for i, state in enumerate(self._previous_states):
-                # print(f"State {i}\n{state}")
 
             self._previous_states.append(deepcopy(self._board))
 

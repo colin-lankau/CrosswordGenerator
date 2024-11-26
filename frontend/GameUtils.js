@@ -64,7 +64,7 @@ export const shiftNext = (position, dir, across, down, allCells, setDir, setActi
     }
 }
 
-export const shiftPrevious = (position, dir, across, down, allCells, setDir, setActiveCell, setHighlightedCells, setActiveWord) => {
+export const shiftPrevious = (position, dir, across, down, allCells, setDir, setActiveCell, setHighlightedCells, setActiveWord, autocheck, userBoard, answerBoard) => {
     // get all positions in order so we can just simply loop through them
     let curDir = dir == 'across' ? 'across' : 'down'; // do this to stop state stale values
     let curPosition = position;
@@ -98,6 +98,13 @@ export const shiftPrevious = (position, dir, across, down, allCells, setDir, set
                 nextIndex = map['across'].length - 1;
             }
             continue;
+        }
+        // if attempting to shift backwards to already correct cell, then shift past it
+        let userValue = userBoard[nextPosition];
+        let answerValue = answerBoard[parseInt(nextPosition.split(",")[0])][parseInt(nextPosition.split(",")[1])];
+        if(autocheck && userValue == answerValue){
+            nextIndex--;
+            continue
         }
         // move backwards to next available cell and change all game contexts
         setActiveCell(nextPosition);

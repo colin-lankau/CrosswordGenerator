@@ -23,6 +23,6 @@
 }
 
 .cell {
-    @apply h-28 text-7xl text-center focus:outline-none border border-black
+    @apply h-28 text-7xl text-center focus:outline-none border border-black caret-transparent
 }
 

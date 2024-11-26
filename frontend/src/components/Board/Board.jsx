@@ -149,18 +149,19 @@ function Cell({ correctValue, row, col, cells, down, across, board }) {
             if(activeCell == highlightedCells[0] && value != ''){ // if at start of word, dont go back yet
                 shouldShiftBack = false;
             }
-            if(autocheck && activeCell != highlightedCells[0] && isAllToLeftCorrect( (dir === 'across' ? acrossPositions : downPositions), position, userBoard, board, dir ) && value != ''){ // if at first empty/incorrect cell in word, and autocheck is on, then stay at cell
+            if(autocheck && activeCell != highlightedCells[0] && isAllToLeftCorrect( (dir === 'across' ? acrossPositions : downPositions), position, userBoard, board, dir ) && value != ''){ 
+                // if at first empty/incorrect cell in word, and autocheck is on, then stay at cell
                 shouldShiftBack = false;
             }
             if(!(autocheck && isCorrect)){  // only remove char if its wrong, or autocheck is off
                 setUserBoardValue('');
             }
-            if(activeCell == highlightedCells[0] && value != '' && (autocheck && isCorrect)){
-                // override behavior -> if a cell is first in positions and autocheck is on and its correct, shift backwards anyway
+            // possibly add another override behavior, for if you are on a correct cell and press backspace
+            if(autocheck && isCorrect){
                 shouldShiftBack = true;
             }
             if(shouldShiftBack){
-                shiftPrevious(position, dir, across, down, cells, setDir, setActiveCell, setHighlightedCells, setActiveWord);
+                shiftPrevious(position, dir, across, down, cells, setDir, setActiveCell, setHighlightedCells, setActiveWord, autocheck, userBoard, board);
             }
         }else if(key == 'ArrowUp'){
             e.preventDefault();
@@ -182,7 +183,7 @@ function Cell({ correctValue, row, col, cells, down, across, board }) {
             }
             setUserBoardValue(key.toUpperCase());
             if(!checkFull(userBoard, cells)){ // shift to next cell if not full
-                shiftNext(position, dir, across, down, cells, setDir, setActiveCell, setHighlightedCells, setActiveWord);
+                shiftNext(position, dir, across, down, cells, setDir, setActiveCell, setHighlightedCells, setActiveWord, autocheck, userBoard, board);
             }else{
                 alert("board is full");
             }
