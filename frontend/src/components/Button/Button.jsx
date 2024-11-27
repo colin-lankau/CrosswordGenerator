@@ -4,7 +4,7 @@ import { GameContext } from '../GameContext';
 
 function Button({setDown, setAcross, setBoard, status, setStatus, children, ...rest}) {
 
-  const { setActiveCell, setHighlightedCells, setActiveWord } = React.useContext(GameContext);
+  const { setActiveCell, setHighlightedCells, setActiveWord, setUserBoard } = React.useContext(GameContext);
 
   const generateCrossword = async () => {
     setStatus('loading');
@@ -37,6 +37,13 @@ function Button({setDown, setAcross, setBoard, status, setStatus, children, ...r
         break;
       }
     }
+    let b = {};
+    for(let i=0; i<5; i++){
+        for(let j=0; j<5; j++){
+            b[`${i},${j}`] = '';
+        }
+    }
+    setUserBoard(b);
   }
 
   return (

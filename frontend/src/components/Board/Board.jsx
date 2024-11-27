@@ -65,6 +65,22 @@ function Cell({ correctValue, row, col, cells, down, across, board }) {
             }
         }
     }, [across]);
+    const order = React.useMemo( () => {
+        let o = null;
+        for(let obj of across){
+            if(obj.positions[0] == position){
+                o = obj.order;
+            }
+        }
+        if(o == null){
+            for(let obj of down){
+                if(obj.positions[0] == position){
+                    o = obj.order;
+                }
+            }
+        }
+        return o;
+    }, [across]);
     const { autocheck } = React.useContext(GameContext);
     const { dir, setDir } = React.useContext(GameContext);
     const { activeCell, highlightedCells, setActiveCell, setHighlightedCells, setActiveWord, userBoard, setUserBoard } = React.useContext(GameContext);
@@ -193,25 +209,28 @@ function Cell({ correctValue, row, col, cells, down, across, board }) {
     }
 
     return (
-        <input 
-            ref={ (element) => cells.current[position] = element} 
-            className={className}
-            type="text"
-            value={userBoard[position]}
-            onKeyDown={ (e) => {
-                handleKeyDown(e) 
-            }}
-            onKeyUp={ (e) => {
-                e.preventDefault();
-            }}
-            onFocus={ (e) => {
-                e.currentTarget.setSelectionRange(
-                    e.currentTarget.value.length,
-                    e.currentTarget.value.length
-                )
-            }}  
-            disabled={className === 'blacksquare'}
-        />
+        <div className="cellContainer">
+            {order && <span className="cellNumber">{order}</span>}
+            <input 
+                ref={ (element) => cells.current[position] = element} 
+                className={className}
+                type="text"
+                value={userBoard[position]}
+                onKeyDown={ (e) => {
+                    handleKeyDown(e) 
+                }}
+                onKeyUp={ (e) => {
+                    e.preventDefault();
+                }}
+                onFocus={ (e) => {
+                    e.currentTarget.setSelectionRange(
+                        e.currentTarget.value.length,
+                        e.currentTarget.value.length
+                    )
+                }}  
+                disabled={className === 'blacksquare'}
+            />
+        </div>
     )
 }
 

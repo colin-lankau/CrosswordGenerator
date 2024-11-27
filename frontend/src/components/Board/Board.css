@@ -7,7 +7,7 @@
 }
 
 .blacksquare {
-    @apply bg-black 
+    @apply bg-black w-full h-full
 }
 
 .highlighted {
@@ -22,7 +22,15 @@
     @apply grid grid-cols-5 gap-1 p-1 bg-black h-auto w-full
 }
 
+.cellContainer {
+    @apply h-28 relative
+}
+
+.cellNumber {
+    @apply absolute top-1 left-2
+}
+
 .cell {
-    @apply h-28 text-7xl text-center focus:outline-none border border-black caret-transparent
+    @apply h-full w-full text-7xl text-center focus:outline-none border border-black caret-transparent
 }
 
