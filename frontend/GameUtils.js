@@ -11,7 +11,7 @@ export const checkFull = (userBoard, cellRefs) => {
     return full;
 }
 
-export const shiftNext = (position, dir, across, down, allCells, setDir, setActiveCell, setHighlightedCells, setActiveWord) => {
+export const shiftNext = (position, dir, across, down, allCells, setDir, setActiveCell, setHighlightedCells, setActiveWord, autocheck, userBoard, answerBoard) => {
     // get all positions in order so we can just simply loop through them
     let curDir = dir == 'across' ? 'across' : 'down'; // do this to stop state stale values
     let curPosition = position;
@@ -44,9 +44,18 @@ export const shiftNext = (position, dir, across, down, allCells, setDir, setActi
             }
             continue;
         }
-        if(allCells.current[nextPosition].value != ''){ // cell is already full, so skip
-            nextIndex++;
-            continue;
+        if(allCells.current[nextPosition].value != ''){ // if cell is empty
+            if(autocheck){ // handle autocheck
+                let userValue = userBoard[nextPosition];
+                let answerValue = answerBoard[parseInt(nextPosition.split(",")[0])][parseInt(nextPosition.split(",")[1])];
+                if(userValue == answerValue){
+                    nextIndex++;
+                    continue
+                }
+            }else{ // cell is already full, so skip it
+                nextIndex++;
+                continue;
+            }
         }
         // move to next available cell and change all game contexts
         setActiveCell(nextPosition);

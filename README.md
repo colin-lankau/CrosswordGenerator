@@ -28,14 +28,14 @@ for auto updating my front end when changes are made in development.
 ## Lessons Learned
 
 This project has taught me a lot about React, as I have never used this software before.  My biggest struggle has been and continues to be keeping my states all in sync throughout the application.
-Sometimes I catch myself thinking I could make certain functionalities super easily in vanilla Javascript, so thinking in React has certainly been a challenge.  I have also learned a lot about css
+Sometimes I catch myself thinking I could make certain functionalities super easily in vanilla Javascript, so thinking in React has certainly been a challenge.  Designing reusable components and following the consumer producer model, has helped me gain practice with "thinking in React" I have also learned a lot about css
 while using Tailwind.  The design portion of web development is not my strong suit but I think as I continue to practice with it I will get better.  I was already very comfortable with Python before
 this project, but learning about web scraping and databases was fun.  Designing the algorithm for crossword generation, was good practice in deciding when to use certain data structures for certain
 problems.  Recently, I analyzed the algorithm, and identified a couple key areas where I could improve its efficiency, leading to an overall increase in efficiency of about 330%.
 
 ## ToDo
 
-* bugs when autocheck is on and user is traversing grid
+* break button into reusable component
 * numbers in squares indicating what clue it points to
 * user feedback when backend is generating crossword
 * ability to choose desired grid layout
