@@ -36,7 +36,7 @@ problems.  Recently, I analyzed the algorithm, and identified a couple key areas
 ## ToDo
 
 * break button into reusable component
-* numbers in squares indicating what clue it points to
+* add spinner while crossword is loading
 * user feedback when backend is generating crossword
 * ability to choose desired grid layout
 * ability to choose a difficulty during generation
