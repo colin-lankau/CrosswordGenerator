@@ -35,10 +35,10 @@ problems.  Recently, I analyzed the algorithm, and identified a couple key areas
 
 ## ToDo
 
-* break button into reusable component
-* add spinner while crossword is loading
-* user feedback when backend is generating crossword
+* possible change swap functionality to rotate left or right through clues
 * ability to choose desired grid layout
 * ability to choose a difficulty during generation
 * way to handle end of game, possibly include a timer and let user know how long it took them, how many clues they swapped, etc.
+* analyze dataset, provide charts and statistics to users curious about a word or clue
 * improve overall front end design- do last when all funcionality is working as desired
+* UI design ideas- navbar on right side with links for practice, statistics, and help page
