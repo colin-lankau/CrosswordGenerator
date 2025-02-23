@@ -1,40 +1,31 @@
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-import time
-# from selenium.webdriver.common.keys import Keys
-# from selenium.webdriver.support import expected_conditions as EC
-# from selenium.webdriver.support.ui import WebDriverWait
+import requests
+from bs4 import BeautifulSoup
+import datetime
+from unidecode import unidecode
 
-def Scrape(date: str):
+def Scrape(dateObj: datetime.date) -> dict:
 
-    # setup
-    chrome_options = webdriver.ChromeOptions()
-    chrome_options.add_argument("--mute-audio")
-    driver = webdriver.Chrome(options=chrome_options)
-    driver.get(f"https://nytcrosswordanswers.org/nyt-crossword-answers-{date}/")
-    print(driver.title)
-    time.sleep(3)
+    date = dateObj.strftime("%m/%d/%y").replace("/", "-")
+    print(f"Started fetching date: {date}")
+    url = f"https://nytcrosswordanswers.org/nyt-crossword-answers-{date}/"
+    page = requests.get(url)
+    soup = BeautifulSoup(page.content, "html.parser")
+    container = soup.find("div", class_="nywrap")
+    uls = container.find_all("ul")
+    answers, clues = [], []
+    for ul in uls:
+        lis = ul.find_all("li")
+        for li in lis:
+            clue = li.find_all("a")[0].text
+            answer = li.find_all("span")[0].text
+            clues.append(unidecode(clue))
+            answers.append(unidecode(answer))
+    print(f"Finished fetching date: {date}")
+    return {
+        "answers": answers, 
+        "clues": clues,
+        "date": dateObj
+    }
 
-    uls = driver.find_elements(By.TAG_NAME, "ul")
-    across = uls[1].find_elements(By.TAG_NAME, "li")
-    down = uls[2].find_elements(By.TAG_NAME, "li")
-
-    across_clues = []
-    across_answers = []
-    for group in across:
-        clue = group.find_element(By.TAG_NAME, "a").get_attribute('innerText')
-        answer = group.find_element(By.TAG_NAME, "span").get_attribute('innerText')
-        across_clues.append(clue)
-        across_answers.append(answer)
-
-    down_clues = []
-    down_answers = []
-    for group in down:
-        clue = group.find_element(By.TAG_NAME, "a").get_attribute('innerText')
-        answer = group.find_element(By.TAG_NAME, "span").get_attribute('innerText')
-        down_clues.append(clue)
-        down_answers.append(answer)
-
-    driver.quit()
-    
-    return across_clues, across_answers, down_clues, down_answers
+if __name__ == '__main__':
+    print("Don't call directly")
